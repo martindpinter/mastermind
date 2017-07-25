@@ -3,34 +3,29 @@
 #include <algorithm>
 #include <string>
 
-bool evaluate(std::string Guess, std::string Solution) {
+void evaluate(std::string Guess, std::string Solution) {
     
-    if (Guess.length() == 4) {
-        // calculate Bulls and Cows
-        int bulls = 0;
-        int cows = 0;
-        std::vector<int> MarkedIndices;
-        std::vector<int> BullValues;
-        
-        for (int i = 0; i < Solution.length(); ++i) {
-            if (Guess[i] == Solution[i]) {
-                bulls++;
-                MarkedIndices.push_back(i);
-                BullValues.push_back(Guess[i]); // Bulls' values must be stored to avoid marking a Cow for a used Bull
-            }
-            else if ((Solution.find(Guess[i]) != std::string::npos) 
-                 && ((std::find(MarkedIndices.begin(), MarkedIndices.end(), i) == MarkedIndices.end()))
-                 && ((std::find(BullValues.begin(), BullValues.end(), Guess[i]) == BullValues.end()))) {
-                cows++;
-                MarkedIndices.push_back(i);
-            }
+    // calculate Bulls and Cows
+    int bulls = 0;
+    int cows = 0;
+    std::vector<int> MarkedIndices;
+    std::vector<int> BullValues;
+    
+    for (int i = 0; i < Solution.length(); ++i) {
+        if (Guess[i] == Solution[i]) {
+            bulls++;
+            MarkedIndices.push_back(i);
+            BullValues.push_back(Guess[i]); // Bulls' values must be stored to avoid marking a Cow for a used Bull
         }
-        std::cout << bulls << "B " << cows << "C" << std::endl << std::endl;
-        return true;
-    } else {
-        std::cout << "Invalid input. Your guess must be a 4-digit number." << std::endl << std::endl;
-        return false;
+        else if ((Solution.find(Guess[i]) != std::string::npos) 
+             && ((std::find(MarkedIndices.begin(), MarkedIndices.end(), i) == MarkedIndices.end()))
+             && ((std::find(BullValues.begin(), BullValues.end(), Guess[i]) == BullValues.end()))) {
+            cows++;
+            MarkedIndices.push_back(i);
+        }
     }
+    std::cout << bulls << "B " << cows << "C" << std::endl << std::endl;
+        
 }
 
 int main() {
@@ -59,8 +54,12 @@ int main() {
             std::cin >> Guess;   
             std::cout << "\t";
         
-            if (evaluate(Guess, Solution))
+            if (Guess.length() == Solution.length()) {
+                evaluate(Guess, Solution);
                 lives--;
+            }
+            else
+                std::cout << "Invalid input. Your guess must be a " << Solution.length() << "-digit number." << std::endl << std::endl;
         }
         
         if (lives > 0)
@@ -72,7 +71,6 @@ int main() {
         std::cin >> PlayAgain;
         std::transform(PlayAgain.begin(), PlayAgain.end(), PlayAgain.begin(), ::toupper);
     }
-    
     
     return 0;
 }
