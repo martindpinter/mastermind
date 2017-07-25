@@ -1,67 +1,74 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
+#include <string>
 
-int getMTrnd() {
-    std::random_device rd;
-    std::mt19937 mt(rd());  // seed the Mersenne Twister generator
-    std::uniform_int_distribution<> dist(1000, 9999); 
-    return dist(mt);
-}
-
-void SplitInt(int x, std::vector<int>& o) {
-   
-   while (x) {
-        o.push_back(x % 10);
-        x /= 10;
-    }
+bool evaluate(std::string Guess, std::string Solution) {
     
-    std::reverse(o.begin(), o.end());
-}
-
-void evaluate(int iGuess, int iSolution) {
-    
-    // split integer >> vector<int>
-    std::vector<int> vGuess;
-    std::vector<int> vSolution;
-    
-    SplitInt(iGuess, vGuess);
-    SplitInt(iSolution, vSolution);
-    
-    
-    // calculate Bulls and Cows
-    int bulls = 0;
-    int cows = 0;
-    
-    for (int i = 0; i < vGuess.size(); ++i) {
-        if (std::find(vSolution.begin(), vSolution.end(), vGuess[i]) != vSolution.end()) 
-            if (vGuess[i] == vSolution[i])
+    if (Guess.length() == 4) {
+        // calculate Bulls and Cows
+        int bulls = 0;
+        int cows = 0;
+        std::vector<int> MarkedIndices;
+        std::vector<int> BullValues;
+        
+        for (int i = 0; i < Solution.length(); ++i) {
+            if (Guess[i] == Solution[i]) {
                 bulls++;
-            else
+                MarkedIndices.push_back(i);
+                BullValues.push_back(Guess[i]); // Bulls' values must be stored to avoid marking a Cow for a used Bull
+            }
+            else if ((Solution.find(Guess[i]) != std::string::npos) 
+                 && ((std::find(MarkedIndices.begin(), MarkedIndices.end(), i) == MarkedIndices.end()))
+                 && ((std::find(BullValues.begin(), BullValues.end(), Guess[i]) == BullValues.end()))) {
                 cows++;
+                MarkedIndices.push_back(i);
+            }
+        }
+        std::cout << bulls << "B " << cows << "C" << std::endl << std::endl;
+        return true;
+    } else {
+        std::cout << "Invalid input. Your guess must be a 4-digit number." << std::endl << std::endl;
+        return false;
     }
-    std::cout << bulls << "B " << cows << "C" << std::endl << std::endl;
 }
 
 int main() {
-    std::cout << "M A S T E R M I N D\t(Bulls and Cows)";
+    
+    std::random_device rd;
+    std::mt19937 mt(rd());  // seed 
+    std::uniform_int_distribution<> dist(1000, 9999); 
+    
+    int maxlives = 8;
+    
+    std::cout << "M A S T E R M I N D\t(Bulls and Cows)" << std::endl;
+    std::cout << "You have " << maxlives << " tries to solve ####" << std::endl << std::endl;
     std::string PlayAgain = "";
     
-    while ((PlayAgain == "") || (PlayAgain == "Y") || (PlayAgain == "YES")) {   // "" does not continue
-        std::cout << std::endl << "####" << std::endl << std::endl;
-        int Guess = 0;
-        int Solution = getMTrnd();
+    
+    while ((PlayAgain == "") || (PlayAgain == "Y") || (PlayAgain == "YES")) {   
+        
+        int lives = maxlives;
+        std::string Guess = "";
+        std::string Solution = std::to_string(dist(mt));
         PlayAgain = "";
         
-        std::cout << Solution << std::endl;
-        
-        while (Guess != Solution) {
+        while ((Guess != Solution) && (lives > 0)) {
+            if (lives == 1)
+                std::cout << "Last try" << std::endl;
             std::cin >> Guess;   
             std::cout << "\t";
-            evaluate(Guess, Solution);
+        
+            if (evaluate(Guess, Solution))
+                lives--;
         }
         
-        std::cout << "Congratulations! Play again? [Y/n]";
+        if (lives > 0)
+            std::cout << "Congratulations! Play again? [Y/n]";
+        else
+            std::cout << "Game over. The solution was " << Solution << ". Play Again? [Y/n]";
+            
+        //std::getline(std::cin, PlayAgain);    // Skips input. Need to flush cin buffer?
         std::cin >> PlayAgain;
         std::transform(PlayAgain.begin(), PlayAgain.end(), PlayAgain.begin(), ::toupper);
     }
